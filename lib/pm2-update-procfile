@@ -1,0 +1,60 @@
+#!/bin/bash 
+
+export HOME=/app
+export NODE=$HOME/vendor/node/bin/node
+export PM2=$HOME/vendor/node/bin/pm2
+export PATH=$PATH:$HOME/vendor/node/bin:$HOME/node_modules/.bin/
+cd $HOME
+
+# Save Procfile for reference
+if [[ ! -f Procfile.orig ]]; then
+        cp Procfile Procfile.orig
+fi
+
+# Handle the case where Procfile was updated
+grep -q pm2 Procfile
+if [[ $? -ne 0 ]]; then
+        cp Procfile Procfile.orig
+fi
+
+PARAMS=$(head -n 1 Procfile.orig | awk '{ print $3 $4 $5 $6 }')
+CMD=$(head -n 1 Procfile.orig | awk '{ print $2 }')
+if [[ -f node_modules/.bin/$CMD ]]; then 
+        CMD="$HOME/node_modules/.bin/$CMD"
+fi
+
+#  "ignoreWatch" : ["[\\/\\\\]\\./", "node_modules"],
+if [[ ! -f processes.json ]]; then
+        cat << EOF > processes.json
+[{
+  "name"        : "dokku",
+  "script"      : "$CMD",
+  "args"        : "['$PARAMS']",
+  "watch"       : "true",
+  "cwd"         : "$HOME"
+}]
+
+EOF
+
+fi
+
+echo "
+#!/bin/bash
+export HOME=/app
+export NODE=$HOME/vendor/node/bin/node
+export PM2=$HOME/vendor/node/bin/pm2
+export PATH=$PATH:$HOME/vendor/node/bin:$HOME/node_modules/.bin/
+cd $HOME
+\$NODE \$PM2 \$1 \$2 \$3 \$4 \$5 \$6 \$7 \$8 \$9
+" > .pm2-run
+chmod +x .pm2-run
+
+# --no-daemon 
+echo "/app/.pm2-run --no-daemon start processes.json" > .pm2-start-app
+chmod +x .pm2-start-app
+
+grep -q pm2 Procfile
+if [[ $? -ne 0 ]]; then
+        echo "web: bash $HOME/.pm2-start-app" > Procfile
+fi
+

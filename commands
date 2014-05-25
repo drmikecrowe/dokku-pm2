@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+
+PLUGIN_DIR=$(dirname $0)
+. "$PLUGIN_DIR/lib/helpers"
+
+# Check if name is specified
+if [[ $1 == pm2 ]] || [[ $1 == pm2:* ]]; then
+  if [[ -z $2 ]]; then
+    echo "You must specify an app name"
+    exit 1
+  fi
+
+function do_cmd() {
+  run_container_cmda "/app/.pm2-run $1 $2 $3 $4 $5 $6 $7 $8 $9"
+}
+
+CMD=$1
+[[ $CMD ]] && {
+  shift
+  APP=$1
+  IMAGE="dokku/$APP"
+  [[ $APP ]] && {
+    shift
+    OPTIONS_STRING="$@"
+  }
+}
+
+# Check if application is specified
+if [[ $CMD == pm2 ]] || [[ $CMD == pm2:* ]]; then
+  if [[ ! $APP ]]; then
+    echo "You must specify an app name"
+    exit 1
+  fi
+fi
+
+case "$CMD" in
+  # Display applications docker options
+  pm2)
+    do_cmd $OPTIONS_STRING
+    ;;
+  help)
+    cat && cat<<EOF
+    pm2 <command>
+EOF
+    ;;
+esac
+
+fi

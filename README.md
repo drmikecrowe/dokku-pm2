@@ -1,3 +1,9 @@
+# Fork status
+
+1.  Now launching PM2 properly
+1.  Command line interface changed, but not implemented
+1.  Configuration not implemented
+
 # dokku-pm2
 
 Dokku plugin to utilize the power of pm2.
@@ -11,7 +17,7 @@ $ cd /var/lib/dokku/plugins
 $ git clone https://github.com/likeastore/dokku-pm2
 ```
 
-## Configuration
+## Configuration  (TODO)
 
 Plugin folder contains `default.yaml` file defaults `pm2` configuration for application:
 
@@ -27,11 +33,7 @@ This would run the application in cluster mode utilizing maximum available CPU's
 The list of `pm2` commands exposed by `dokku` interace:
 
 ```plain
-	dokku pm2:list app
-	dokku pm2:monit app
-	dokku pm2:logs app
-	dokku pm2:status app
-	dokku pm2:kill app proc
+	dokku pm2 app command
 ```
 
 ## License

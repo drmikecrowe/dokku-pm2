@@ -2,8 +2,11 @@
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 APP="$1";  IMAGE="dokku/$APP"
 
+PLUGIN_DIR=$(dirname $0)
+. "$PLUGIN_DIR/lib/helpers"
+
 echo '-----> Installing pm2'
-id=$(docker run -d $IMAGE /bin/bash -c "/app/.pm2-install")
-docker attach $id
-test $(docker wait $id) -eq 0
-docker commit $id $IMAGE > /dev/null
+run_container_cmd "/app/.pm2-install"
+
+echo '-----> Updating pm2 procfile'
+run_container_cmd "/app/.pm2-update-procfile"
